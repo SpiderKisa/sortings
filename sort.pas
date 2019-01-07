@@ -1,6 +1,6 @@
-const n = 10;
+const n = 20;
 
-type T_VECTOR = array [0..2 * n + 1] of integer;
+type T_VECTOR = array [0..2 * n - 1] of integer;
 
 procedure readV (f: text; var size: byte; var vect: T_VECTOR);
 var s, num: string;
@@ -91,94 +91,96 @@ begin
     end;
 end;
 
-procedure mergesort(vect: T_VECTOR; size: byte);
-var sort: T_VECTOR;
-    i, j, step :byte;
-    up, flag: boolean;
-    r_down, l_down, r_up, l_up: byte;
-    leng_r, leng_l : byte;
+procedure partitionAndMerge(var a, b: T_VECTOR; size, step: byte);
+var l_down, r_down: byte;
+    leng_r, leng_l: byte;
+    j, i:byte;
 begin
-  for i:=1 to size - 1 do
-    sort[i]:=vect[i];
-  up:= true;
-  step:=1;
-
-
-
-step:= step * 2;
-    flag:=false;
-    if (up = true)
+  j:= 0;
+  repeat
+    l_down:= j;
+    r_down:= j + step;
+    leng_l:= step;
+    if (j + leng_l + step > size)
+      then leng_r:= size mod step
+      else leng_r:= step;
+    if (r_down >= size)
       then begin
-        l_down:= 0;
-        r_down:= step;
-        l_up:= size;
-        r_up:= size + step;
-        j:= size;
+        for i:= j to size - 1 do begin
+          b[i]:=a[i];
+          inc(j);
+        end;
       end
       else begin
-        l_up:= 0;
-        r_up:= step;
-        l_down:= size;
-        r_down:=size + step;
-        j:= 0;
-      end;ÿ
-
-
-  while (step < (size-1) div 2) do begin
-    
-      repeat
-        leng_r:= step;
-        leng_l:= step;
         repeat
-          if (sort[l_down] <= sort[r_down])
+        if (a[l_down] = a[r_down])
+          then begin
+            b[j]:=a[l_down];
+            b[j + 1]:= a[l_down];
+            j:= j + 2;
+            inc(l_down);
+            inc(r_down);
+            dec(leng_r);
+            dec(leng_l);
+          end
+          else if (a[l_down] < a[r_down])
             then begin
-              sort[j]:=sort[l_down];
+              b[j]:=a[l_down];
               inc(l_down);
               inc(j);
               dec(leng_l);
             end
             else begin
-              sort[j]:=sort[r_down];
+              b[j]:=a[r_down];
               inc(r_down);
               inc(j);
               dec(leng_r);
             end;
-        until (leng_r = 0) and (leng_l = 0);
+        until (leng_r = 0) or (leng_l = 0);
         if (leng_r > 0)
           then begin
-            for i:= r_down to r_down + leng_r do begin
-              sort[j]:=sort[i];
+            for i:= r_down to r_down + leng_r - 1 do begin
+              b[j]:=a[i];
               inc(j);
             end;             
           end;
         if (leng_l > 0) 
           then begin
-            for i:= l_down to l_down + leng_l do begin
-              sort[j]:=sort[i];
+            for i:= l_down to l_down + leng_l - 1 do begin
+              b[j]:=a[i];
               inc(j);
             end;
           end;
-          if (up = true)
-            then if (j = size - 1)
-                then flag:=true;
-          if (up = false)
-            then if (j = 2 * size - 1)
-              then flag:= true;
-        //until ((l_down - r_down - 1) < step);
-        until (flag = false);
+          end;
+        until (j >= size );
+end;
+
+procedure mergesort(var vect: T_VECTOR; size: byte);
+var sort: T_VECTOR;
+    step :byte;
+    up: boolean;
+begin
+  up:= true;
+  step:=1;
+  while (step < size) do begin
+        if (up = true)
+          then partitionAndMerge(vect, sort, size, step)
+          else partitionAndMerge(sort, vect, size, step);
         up:= not up;
+        step:= step * 2;
   end;
-  
+  if (up = false)
+    then vect:= sort;
 end;
 
 var vect: T_VECTOR;
     size: byte;
-    time, total: integer;
-    init, outp: text;
+    init: text;
 begin
   assign(init,'init.txt');
   reset(init);
   readV(init, size, vect);
   mergesort(vect, size);
+  printsort(0, size - 1, vect);
   close(init);
 end.
