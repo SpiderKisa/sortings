@@ -1,6 +1,6 @@
-const n = 20;
+const n = 15;
 
-type T_VECTOR = array [0..2 * n - 1] of integer;
+type T_VECTOR = array [0..2 * n] of integer;
 
 procedure readV (f: text; var size: byte; var vect: T_VECTOR);
 var s, num: string;
@@ -26,6 +26,7 @@ end;
 procedure twinsertsort(var vect: T_VECTOR; size: byte);
 var sort: T_VECTOR;
     i, j, k, right, left, l, r: byte;
+    flag: boolean;
     c, m:word; //c - comparisons, m - moves
 begin
   c:=0;
@@ -34,6 +35,7 @@ begin
   right:=size;
   left:=size;
   for i:= 1 to size - 1 do begin
+    flag:=false;
     if (vect[i] <= sort[left])
       then begin
         inc(c);
@@ -51,14 +53,15 @@ begin
             l:= left;
             r:=right;
             inc(c);
-            while (sort[j + 1] < vect[i]) {(l < r)} do begin
-              //inc(j); 
+            while (flag = false)do begin//(sort[j + 1] < vect[i]) do begin
               j:= (l + r) div 2;
               if (sort[j] < vect[i])
                 then l:= j + 1
                 else if (sort[j] > vect[i])
                   then r:= j - 1;
-                  
+              //inc(c);
+              if (vect[i] <= sort[j + 1]) and (vect[i] >= sort[j])
+                then flag:=true;
               inc(c);
             end;
             if (j - left < right - j)
@@ -180,7 +183,8 @@ begin
   assign(init,'init.txt');
   reset(init);
   readV(init, size, vect);
-  mergesort(vect, size);
+  //mergesort(vect, size);
+  twinsertsort(vect, size);
   printsort(0, size - 1, vect);
   close(init);
 end.
