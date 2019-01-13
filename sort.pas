@@ -1,8 +1,8 @@
-const n = 15;
+const n = 50000;
 
 type T_VECTOR = array [0..2 * n] of integer;
 
-procedure readV (f: text; var size: byte; var vect: T_VECTOR);
+procedure readV (f: text; var size: integer; var vect: T_VECTOR);
 var s, num: string;
 begin
   size:=0;
@@ -15,7 +15,7 @@ begin
   end
 end;
 
-procedure printsort(left, right: word; const sort: T_VECTOR);
+procedure printsort(left, right: integer; const sort: T_VECTOR);
 var k: word;
 begin
   for k:= left to right do
@@ -23,11 +23,11 @@ begin
  writeln;
 end;
 
-procedure twinsertsort(var vect: T_VECTOR; size: byte);
+procedure twinsertsort(var vect: T_VECTOR; size: integer);
 var sort: T_VECTOR;
-    i, j, k, right, left, l, r: byte;
+    i, j, k, right, left, l, r: integer;
     flag: boolean;
-    c, m:word; //c - comparisons, m - moves
+    c, m:integer; //c - comparisons, m - moves
 begin
   c:=0;
   m:=0;
@@ -83,9 +83,10 @@ begin
               end;
         end;
    // printsort(left, right, sort);
-   // printsort(0, 2*n, sort);
-   // writeln('Перестановок: ',m,'. Сравнений: ',c);
-   // writeln;
+    //printsort(0, 2*n, sort);
+    //writeln('Перестановок: ',m);
+    //writeln ('Сравнений: ',c);
+    //writeln;
   end;
   k:=0;
     for j:= left to right do begin
@@ -94,20 +95,20 @@ begin
     end;
 end;
 
-procedure partitionAndMerge(var a, b: T_VECTOR; size, step: byte);
-var l_down, r_down: byte;
-    leng_r, leng_l: byte;
-    j, i:byte;
+procedure partitionAndMerge(var a, b: T_VECTOR; size, step: integer; var m, c: integer);
+var left, right: integer;
+    leng_r, leng_l: integer;
+    j, i:integer;
 begin
   j:= 0;
   repeat
-    l_down:= j;
-    r_down:= j + step;
+    left:= j;
+    right:= j + step;
     leng_l:= step;
     if (j + leng_l + step > size)
       then leng_r:= size mod step
       else leng_r:= step;
-    if (r_down >= size)
+    if (right >= size)
       then begin
         for i:= j to size - 1 do begin
           b[i]:=a[i];
@@ -116,59 +117,71 @@ begin
       end
       else begin
         repeat
-        if (a[l_down] = a[r_down])
+        if (a[left] = a[right])
           then begin
-            b[j]:=a[l_down];
-            b[j + 1]:= a[l_down];
+            b[j]:=a[left];
+            b[j + 1]:= a[left];
             j:= j + 2;
-            inc(l_down);
-            inc(r_down);
+            inc(left);
+            inc(right);
             dec(leng_r);
             dec(leng_l);
+            inc(c);
           end
-          else if (a[l_down] < a[r_down])
+          else if (a[left] < a[right])
             then begin
-              b[j]:=a[l_down];
-              inc(l_down);
+              b[j]:=a[left];
+              inc(left);
               inc(j);
               dec(leng_l);
+              inc(c);
             end
             else begin
-              b[j]:=a[r_down];
-              inc(r_down);
+              b[j]:=a[right];
+              inc(right);
               inc(j);
               dec(leng_r);
+              inc(c);
+              inc(m);
             end;
         until (leng_r = 0) or (leng_l = 0);
         if (leng_r > 0)
           then begin
-            for i:= r_down to r_down + leng_r - 1 do begin
+            for i:= right to right + leng_r - 1 do begin
               b[j]:=a[i];
               inc(j);
             end;             
           end;
         if (leng_l > 0) 
           then begin
-            for i:= l_down to l_down + leng_l - 1 do begin
+            for i:= left to left + leng_l - 1 do begin
               b[j]:=a[i];
               inc(j);
             end;
           end;
           end;
         until (j >= size );
+ // writeln('Упорядоченные ',step*2);
+  //printsort(0, size - 1, b);
+ // writeln('Перестановок: ',m);
+ // writeln ('Сравнений: ',c);
+ // writeln;
 end;
 
-procedure mergesort(var vect: T_VECTOR; size: byte);
+procedure mergesort(var vect: T_VECTOR; size: integer);
 var sort: T_VECTOR;
-    step :byte;
+    step :integer;
     up: boolean;
+    c, m: integer;
 begin
+  m:= 0;
+  c:= 0;
   up:= true;
   step:=1;
   while (step < size) do begin
         if (up = true)
-          then partitionAndMerge(vect, sort, size, step)
-          else partitionAndMerge(sort, vect, size, step);
+          then partitionAndMerge(vect, sort, size, step, m, c)
+          else partitionAndMerge(sort, vect, size, step, m, c);
         up:= not up;
         step:= step * 2;
   end;
@@ -177,14 +190,23 @@ begin
 end;
 
 var vect: T_VECTOR;
-    size: byte;
+    size: integer;
     init: text;
 begin
   assign(init,'init.txt');
   reset(init);
-  readV(init, size, vect);
+  //readV(init, size, vect);
+  //writeln('Последовательность:');
+  //printsort(0, size - 1, vect);
+  //writeln('Элементов: ', size);
+  //writeln;
+  size:=n;
+  for var i:= 0 to n - 1 do
+    vect[i]:= random(-500, 500);
+  milliseconds;
   //mergesort(vect, size);
   twinsertsort(vect, size);
-  printsort(0, size - 1, vect);
+  writeln(millisecondsdelta);
+  //printsort(0, size - 1, vect);
   close(init);
 end.
