@@ -1,4 +1,4 @@
-const n = 50000;
+const n = 1000000;
 
 type T_VECTOR = array [0..2 * n] of integer;
 
@@ -163,9 +163,9 @@ begin
         until (j >= size );
  // writeln('Упорядоченные ',step*2);
   //printsort(0, size - 1, b);
- // writeln('Перестановок: ',m);
- // writeln ('Сравнений: ',c);
- // writeln;
+  //writeln('Перестановок: ',m);
+  //writeln ('Сравнений: ',c);
+  //writeln;
 end;
 
 procedure mergesort(var vect: T_VECTOR; size: integer);
@@ -201,12 +201,24 @@ begin
   //writeln('Элементов: ', size);
   //writeln;
   size:=n;
+  for var j:= 1 to 5 do begin
   for var i:= 0 to n - 1 do
     vect[i]:= random(-500, 500);
-  milliseconds;
-  //mergesort(vect, size);
+  
+  
+   milliseconds;
   twinsertsort(vect, size);
   writeln(millisecondsdelta);
+
+  for var i:= 0 to n - 1 do
+    vect[i]:= random(-500, 500);
+writeln;
+  milliseconds;
+  mergesort(vect, size);
+  writeln(millisecondsdelta);
+  
+  end;
+  //writeln(millisecondsdelta);
   //printsort(0, size - 1, vect);
   close(init);
 end.
